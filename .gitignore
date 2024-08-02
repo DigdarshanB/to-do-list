@@ -27,5 +27,5 @@ yarn-error.log*
 package.json
 package-lock.json
 
-./firebase.js
+src/firebase.js
 
