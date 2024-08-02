@@ -18,6 +18,16 @@
 
 <li>For the data to be stored on firebase, open firebase and create a project. Then, initialise Firebase and begin using the SDKs by copying the code and updating your firebase.js file.</li><br>
 
+<li>
+
+//initialize firebase
+const app = initializeApp(firebaseConfig);
+
+//initialize firestore database
+const db = getFirestore(app);
+
+export { db };
+
 <li>After configuring firebase and all, you are now ready to run the program.</li><br>
 
  <li>To run the program, open the terminal window and run the command <b> 'npm start' </b> </li>
