@@ -6,6 +6,8 @@
 
 <li>The entered activities/data are stored in the firebase and when the web page is refreshed or even closed, your list of activities still remain there after running the prorgam again.</li><br>
 
+<li>If you have any spelling errors while adding the activity, you are able to update it by clicking on the pencil button so that you don't have to delete the task and type in another.
+
 # Steps to follow to run this code:
 
 <li> Clone this repo in your device by running the command  <b>'gh repo clone DigdarshanB/to-do-list'</b> on your terminal.</li><br>
