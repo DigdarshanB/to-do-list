@@ -1,105 +1,64 @@
-import React, { useState, useEffect } from 'react';
-import { AiOutlinePlus } from 'react-icons/ai';
-import Todo from './Todo';
-import { db } from './firebase';
-import { query, collection, onSnapshot, updateDoc, doc, addDoc, deleteDoc } from 'firebase/firestore';
-
-const style = {
-  bg: `h-screen w-screen p-4 bg-gradient-to-r from-[#C9FFBF] to-[#FEB47B]`,
-  container: `bg-slate-100 max-w-[700px] w-full m-auto rounded-md shadow-xl p-4 mt-10`,
-  heading: `text-3xl text-center text-black-400 p-2 mb-4 `,
-  form: `flex justify-between mb-6`,
-  input: `border p-2 w-full text-xl`,
-  button: `border p-4 ml-2 bg-blue-500 text-slate-100`,
-  count: `text-center p-2`,
-  top: `text-4xl font-bold text-center text-red-500 italic mb-6 mt-4`};
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import "./App.css";
 
 function App() {
-  const [todos, setTodos] = useState([]);
-  const [input, setInput] = useState('');
-  const [editInput, setEditInput] = useState(''); // State for the new text being entered
-  const [editingTodo, setEditingTodo] = useState(null); // State to track which todo is being edited
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const auth = getAuth(); // Initialize Firebase Auth
 
-  //create todo
-  const createActivity = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (input === '') {
-      alert('Please add an activity!');
-      return;
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      localStorage.setItem('userEmail', user.email);
+      setError('');
+      navigate('/list');
+    } catch (error) {
+      setError('Invalid email or password. Please try again.');
     }
-    await addDoc(collection(db, 'todos'), {
-      text: input,
-      completed: false,
-    });
-    setInput('');
   };
-
-  // Read todo from firebase
-  useEffect(() => {
-    const q = query(collection(db, 'todos'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      let todosArr = [];
-      querySnapshot.forEach((doc) => {
-        todosArr.push({ ...doc.data(), id: doc.id });
-      });
-      setTodos(todosArr);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Toggle completion status of todo
-  const toggleComplete = async (todo) => {
-    await updateDoc(doc(db, 'todos', todo.id), {
-      completed: !todo.completed
-    });
-  };
-
-  // Start editing a todo
-  const startEditing = (todo) => {
-    setEditingTodo(todo.id);
-    setEditInput(todo.text);
-  };
-
-  // Update todo in firebase
-  const updateTodo = async (id) => {
-    await updateDoc(doc(db, 'todos', id), {
-      text: editInput,
-    });
-    setEditingTodo(null);
-  };
-
-  // Delete todo
-  const deleteTodo = async (id) => {
-    await deleteDoc(doc(db, 'todos', id));
-  };
+  
 
   return (
-    <>
-      <h1 className={style.top}>r e m i n d e r</h1>
-      <div className={style.bg}>
-        <div className={style.container}>
-          <h3 className={style.heading}>Things to do : </h3>
-          <form onSubmit={createActivity} className={style.form}>
-            <input value={input} onChange={(e) => setInput(e.target.value)} className={style.input} type='text' placeholder='Add activity' />
-            <button className={style.button}><AiOutlinePlus size={30} /> </button>
-          </form>
-          <ul>
-            {todos.map((todo, index) => (
-              <Todo key={index}
-                todo={todo} toggleComplete={toggleComplete}
-                deleteTodo={deleteTodo}
-                startEditing={startEditing} // Pass startEditing function
-                updateTodo={updateTodo} // Pass updateTodo function
-                editInput={editInput}
-                setEditInput={setEditInput}
-                editingTodo={editingTodo}
-              />
-            ))}
-          </ul>
-          <p className={style.count}>You have {todos.length} tasks.</p>
-        </div>
+    <div className="bg-cover">
+      <div className="bg-white p-8 rounded shadow-md w-full max-w-md mt-4">
+        <form onSubmit={handleLogin} className="space-y-6">
+          <h1 className="text-3xl font-bold text-center">Log In</h1>
+          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full py-2 px-4 bg-blue-500 text-white font-medium rounded-md shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Submit
+          </button>
+        </form>
       </div>
-    </>
+    </div>
   );
 }
 
