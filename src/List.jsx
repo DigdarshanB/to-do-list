@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { AiOutlinePlus } from 'react-icons/ai';
 import Todo from './Todo';
-import { db } from './firebase/firebase';
+import { db } from './firebase/firebase'; // Ensure this is correctly pointing to your Firebase config
 import { query, collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
-import Footer from './footer';
+import Footer from './Footer';
 
 const styles = {
-  bg: `min-h-[80vh] flex flex-col justify-between w-full bg-gradient-to-r from-[#C9FFBF] to-[#FEB47B]`,
-  container: `bg-slate-100 max-w-[700px] w-full m-auto rounded-md shadow-xl p-4 flex flex-col sm:p-6 md:p-8 lg:p-10`, // Adjust padding for responsiveness
-  heading: `text-2xl text-center text-black p-2 mb-4 sm:text-3xl md:text-4xl`, // Responsive text sizes
+  bg: `min-h-[80vh] flex flex-col justify-between w-full bg-gradient-to-b from-[#FAF0E6] to-[#343434]`,
+  container: `bg-[#DCDCDC] max-w-[700px] w-full m-auto rounded-md shadow-xl p-4 flex flex-col sm:p-6 md:p-8 lg:p-10`,
+  heading: `text-2xl text-center text-black p-2 mb-4 sm:text-3xl md:text-4xl`,
   form: `flex flex-col sm:flex-row justify-between mb-6`,
-  input: `border p-2 w-full text-lg sm:text-xl sm:mb-0 sm:mr-2 mb-4`, // Responsive text size and margin adjustments
-  button: `border p-4 bg-blue-500 text-slate-100 sm:w-auto w-full`, // Full-width on smaller screens
-  count: `text-center p-2 text-base sm:text-lg`, // Responsive text size
+  input: `bg-[#F0EAD6] border p-2 w-full text-lg sm:text-xl sm:mb-0 sm:mr-2 mb-4`,
+  button: `border p-4 bg-blue-500 text-slate-100 sm:w-auto w-full`,
+  count: `text-center p-2 text-base sm:text-lg`,
   list: `flex-grow`
 }
 
@@ -25,13 +25,13 @@ function List() {
   const [editingTodo, setEditingTodo] = useState(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const navigate = useNavigate();
+  const userEmail = localStorage.getItem('userEmail');
 
   useEffect(() => {
-    const userEmail = localStorage.getItem('userEmail');
     if (!userEmail) {
       navigate('/'); // Redirect to login if not logged in
     }
-  }, [navigate]);
+  }, [navigate, userEmail]);
 
   const handleLogout = () => {
     localStorage.removeItem('userEmail');
@@ -44,7 +44,8 @@ function List() {
       alert('Please add an activity!');
       return;
     }
-    await addDoc(collection(db, 'todos'), {
+    const user = localStorage.getItem('userEmail');
+    await addDoc(collection(db, 'userActivities', user, 'todos'), {
       text: input,
       completed: false,
     });
@@ -52,7 +53,7 @@ function List() {
   };
 
   useEffect(() => {
-    const q = query(collection(db, 'todos'));
+    const q = query(collection(db, 'userActivities', userEmail, 'todos'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       let todosArr = [];
       querySnapshot.forEach((doc) => {
@@ -61,10 +62,10 @@ function List() {
       setTodos(todosArr);
     });
     return () => unsubscribe();
-  }, []);
+  }, [userEmail]);
 
   const toggleComplete = async (todo) => {
-    await updateDoc(doc(db, 'todos', todo.id), {
+    await updateDoc(doc(db, 'userActivities', userEmail, 'todos', todo.id), {
       completed: !todo.completed
     });
   };
@@ -75,14 +76,14 @@ function List() {
   };
 
   const updateTodo = async (id) => {
-    await updateDoc(doc(db, 'todos', id), {
+    await updateDoc(doc(db, 'userActivities', userEmail, 'todos', id), {
       text: editInput,
     });
     setEditingTodo(null);
   };
 
   const deleteTodo = async (id) => {
-    await deleteDoc(doc(db, 'todos', id));
+    await deleteDoc(doc(db, 'userActivities', userEmail, 'todos', id));
   };
 
   const handleUserIconClick = () => {
@@ -91,7 +92,7 @@ function List() {
 
   return (
     <>
-      <Navbar user={{ email: localStorage.getItem('userEmail') }} onUserIconClick={handleUserIconClick} showUserDetails={showUserDetails} handleLogout={handleLogout} />
+      <Navbar user={{ email: userEmail }} onUserIconClick={handleUserIconClick} showUserDetails={showUserDetails} handleLogout={handleLogout} />
       <div className={styles.bg}>
         <div className={styles.container}>
           <h3 className={styles.heading}>Things to do :</h3>
