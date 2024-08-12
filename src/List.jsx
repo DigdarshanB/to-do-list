@@ -5,7 +5,7 @@ import { db } from './firebase/firebase'; // Ensure this is correctly pointing t
 import { query, collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
-import Footer from './Footer';
+import Footer from './footer';
 
 const styles = {
   bg: `min-h-[80vh] flex flex-col justify-between w-full bg-gradient-to-b from-[#FAF0E6] to-[#343434]`,
